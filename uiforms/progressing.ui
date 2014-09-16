@@ -1,0 +1,1090 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>progressing</class>
+ <widget class="QWidget" name="progressing">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>809</width>
+    <height>525</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>525</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Purchase Order Item Progressing Report</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QFrame" name="frame">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>400</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>400</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QGridLayout" name="gridLayout">
+        <property name="margin">
+         <number>5</number>
+        </property>
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QGroupBox" name="_formatGroupBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Report Format Selection</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <property name="margin">
+            <number>5</number>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="_ItemsByPORB">
+             <property name="text">
+              <string>Items By PO</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="_itemByVendorRB">
+             <property name="text">
+              <string>Items By Vendor</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QGroupBox" name="_requestFiltersGBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>237</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Expense Request Filter</string>
+          </property>
+          <property name="checkable">
+           <bool>false</bool>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <property name="margin">
+            <number>5</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QRadioButton" name="_useExpCode">
+               <property name="text">
+                <string>Exp Code#: </string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="ExpenseCluster" name="_expCode">
+               <property name="label">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QRadioButton" name="_useExpCodeFree">
+               <property name="text">
+                <string>Exp Code Start:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="XLineEdit" name="_expCodeFree">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="spacing">
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="_userNameLit">
+               <property name="text">
+                <string>User Name: </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="XComboBox" name="_reqUserName">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="allowNull">
+                <bool>true</bool>
+               </property>
+               <property name="nullStr">
+                <string/>
+               </property>
+               <property name="type">
+                <enum>XComboBox::Users</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="2" rowspan="4">
+         <widget class="QGroupBox" name="_commentGroupBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Progressing PO Comment</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <property name="margin">
+            <number>5</number>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QTextEdit" name="_commentText">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>200</height>
+              </size>
+             </property>
+             <property name="focusPolicy">
+              <enum>Qt::ClickFocus</enum>
+             </property>
+             <property name="contextMenuPolicy">
+              <enum>Qt::NoContextMenu</enum>
+             </property>
+             <property name="acceptDrops">
+              <bool>true</bool>
+             </property>
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="autoFormatting">
+              <set>QTextEdit::AutoNone</set>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+             <property name="acceptRichText">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <layout class="QHBoxLayout">
+             <item>
+              <widget class="QLabel" name="_CommentPOLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>      PO Number:  </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="_commentPOValue">
+               <property name="minimumSize">
+                <size>
+                 <width>82</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="_pageLit1">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>24</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="contextMenuPolicy">
+                <enum>Qt::NoContextMenu</enum>
+               </property>
+               <property name="text">
+                <string>Page</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="_page">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>30</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="frame">
+                <bool>false</bool>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="keyboardTracking">
+                <bool>false</bool>
+               </property>
+               <property name="minimum">
+                <number>-9999</number>
+               </property>
+               <property name="maximum">
+                <number>9999</number>
+               </property>
+               <property name="value">
+                <number>1</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="_pageLit2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>10</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>10</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="cursor">
+                <cursorShape>UpArrowCursor</cursorShape>
+               </property>
+               <property name="contextMenuPolicy">
+                <enum>Qt::NoContextMenu</enum>
+               </property>
+               <property name="text">
+                <string>of</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="_pages">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>30</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="frame">
+                <bool>false</bool>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="keyboardTracking">
+                <bool>false</bool>
+               </property>
+               <property name="minimum">
+                <number>-9999</number>
+               </property>
+               <property name="maximum">
+                <number>9999</number>
+               </property>
+               <property name="value">
+                <number>1</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="2" column="0">
+            <layout class="QHBoxLayout">
+             <item>
+              <widget class="QLabel" name="_CommentVendLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>   Vendor Name:  </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="_commentVendValue">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="3" column="0">
+            <layout class="QHBoxLayout">
+             <item>
+              <widget class="QLabel" name="_CommentDateLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Comment Date:  </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="_commentDateValue">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="4" column="0">
+            <layout class="QHBoxLayout">
+             <item>
+              <widget class="QLabel" name="_userLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>      Entered By:  </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="_userValue">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="5" column="0">
+            <layout class="QHBoxLayout">
+             <property name="spacing">
+              <number>3</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="_next">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>50</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>&amp;&lt;&lt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="_prev">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>50</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>&amp;&gt;&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="_new">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>&amp;New</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QGroupBox" name="_orderDateGroupBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Order Date Filters</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <property name="margin">
+            <number>5</number>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <item row="0" column="1" rowspan="4">
+            <widget class="DateCluster" name="_orderDateBack">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="_order2weekRB">
+             <property name="text">
+              <string>Ordered &gt; 2 Weeks Ago</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="_allOrderRB">
+             <property name="text">
+              <string>All Outstanding Orders</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QRadioButton" name="_orderDateRB">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Ordered Range</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QGroupBox" name="_woGb">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Work Order Insufficient Inventory Filter</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <property name="margin">
+            <number>5</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="_woLit">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Open Work Orders:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="XComboBox" name="_woCB">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="allowNull">
+              <bool>true</bool>
+             </property>
+             <property name="type">
+              <enum>XComboBox::Adhoc</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QGroupBox" name="_dueDateGroupBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Due Date Filters</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <property name="margin">
+            <number>5</number>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="_allDueRB">
+             <property name="text">
+              <string>All Outstanding Orders</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="_overdueRB">
+             <property name="text">
+              <string>Overdue</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1" rowspan="3">
+            <widget class="DateCluster" name="_dueDateBack">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QRadioButton" name="_dueIn2WeeksRB">
+             <property name="text">
+              <string>Due in 2 Weeks</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QRadioButton" name="_dueDateChanged">
+             <property name="text">
+              <string>Due Date Changed</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QRadioButton" name="_dueDateRB">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Due Range   </string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout">
+       <property name="spacing">
+        <number>5</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="_close">
+         <property name="text">
+          <string>&amp;Close</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_query">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>&amp;Query</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_print">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>&amp;Print</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_expand">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>&amp;Expand All</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_collapse">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>&amp;Collapse All</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Maximum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>250</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="XTreeWidget" name="_ProgressingList">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="showDropIndicator" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::NoDragDrop</enum>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="textElideMode">
+      <enum>Qt::ElideLeft</enum>
+     </property>
+     <property name="rootIsDecorated">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DateCluster</class>
+   <extends></extends>
+   <header>datecluster.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ExpenseCluster</class>
+   <extends></extends>
+   <header>expensecluster.h</header>
+  </customwidget>
+  <customwidget>
+   <class>XComboBox</class>
+   <extends></extends>
+   <header>xcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>XLineEdit</class>
+   <extends></extends>
+   <header>xlineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>XTreeWidget</class>
+   <extends></extends>
+   <header>xtreewidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>_close</tabstop>
+  <tabstop>_query</tabstop>
+  <tabstop>_print</tabstop>
+  <tabstop>_expand</tabstop>
+  <tabstop>_collapse</tabstop>
+  <tabstop>_itemByVendorRB</tabstop>
+  <tabstop>_allOrderRB</tabstop>
+  <tabstop>_order2weekRB</tabstop>
+  <tabstop>_orderDateRB</tabstop>
+  <tabstop>_ProgressingList</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>_expand</sender>
+   <signal>pressed()</signal>
+   <receiver>_ProgressingList</receiver>
+   <slot>expandAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>784</x>
+     <y>145</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>295</x>
+     <y>406</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_collapse</sender>
+   <signal>pressed()</signal>
+   <receiver>_ProgressingList</receiver>
+   <slot>collapseAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>784</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>457</x>
+     <y>398</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_dueDateRB</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>_dueDateBack</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>135</x>
+     <y>238</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>380</x>
+     <y>226</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_orderDateRB</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>_orderDateBack</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>115</x>
+     <y>329</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>380</x>
+     <y>327</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_useExpCodeFree</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>_expCodeFree</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>166</x>
+     <y>92</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>279</x>
+     <y>87</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_useExpCode</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>_expCode</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>171</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>249</x>
+     <y>50</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

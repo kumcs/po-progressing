@@ -1,0 +1,27 @@
+<package id="Progressing"
+         name="progressing"
+         developer="J Standring"
+         descrip="Progressing Screen Containing all outstanding orders and contact details"
+         version="4.1.0"
+         updater="2.2.5">
+  <pkgnotes>Purchase Order Progressing Screen</pkgnotes>
+   
+  <loadcmd          name="progressing" 
+                    title="PO Progressing"
+                    module="Purchase"
+                    privname="Progressing"
+                    executable="!customuiform">
+      <arg value="uiform=progressing"/>
+  </loadcmd>
+    
+ <script file="scripts/ini.sql" onerror="Prompt" />
+  
+ <loadappscript file="scripts/progressing.js" name="progressing"  order="0"/>
+ <loadappscript file="scripts/progressingComment.js" name="progressingComment"  order="0"/>
+  
+ <loadappui file="uiforms/progressing.ui"         order="0" />
+ <loadappui file="uiforms/progressingComment.ui"         order="0" /> 
+ 
+ <loadreport grade="0" file="reports/ProgressingByPO.xml" />
+ <loadreport grade="0" file="reports/ProgressingByVendor.xml" /> 
+</package>

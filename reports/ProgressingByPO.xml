@@ -1,0 +1,1347 @@
+<!DOCTYPE openRPTDef>
+<report>
+ <title>Progressing By PO</title>
+ <name>ProgressingByPO</name>
+ <description>This Report Shows All Currently Outstanding Parts By Ordered and Expected Date for each supplier</description>
+ <parameter default="565" active="true" listtype="static" type="integer" name="wo_id">
+  <description></description>
+ </parameter>
+ <grid>
+  <snap/>
+  <show/>
+  <x>0.05</x>
+  <y>0.05</y>
+ </grid>
+ <size>A4</size>
+ <landscape/>
+ <topmargin>20</topmargin>
+ <bottommargin>20</bottommargin>
+ <rightmargin>20</rightmargin>
+ <leftmargin>20</leftmargin>
+ <querysource>
+  <name>Detail</name>
+  <sql>SELECT pohead_id,
+       formatDate(subcomment.comment_date) as datetime,
+       subcomment.comment_text,
+       subcomment.comment_user,
+       poitem_duedate,
+       pohead_number,
+       poitem_linenumber,
+       formatDate(pohead_orderdate) AS f_ordereddate,
+       formatDate(poitem_duedate) AS f_duedate,
+       formatDate(poitem_rlsd_duedate) AS f_orgduedate,
+       trim(BOTH ' ' FROM to_char(poitem_qty_received - poitem_qty_returned, '9999999999.99')) AS f_received,
+       trim(BOTH ' ' FROM to_char(poitem_qty_ordered, '9999999999.99')) AS f_ordered,
+       curr_symbol ||  trim(BOTH ' ' FROM to_char(poitem_unitprice, '9999999999.99999')) AS f_price,
+       curr_symbol ||  trim(BOTH ' ' FROM to_char(poitem_unitprice * poitem_qty_ordered, '9999999999.99')) AS f_extended,
+       item_number,
+       CASE 
+        WHEN (LENGTH(TRIM(BOTH '	' FROM poitem_vend_item_descrip)) > 0) THEN (poitem_vend_item_descrip) 
+        WHEN (LENGTH(TRIM(BOTH '	' FROM item_descrip1)) > 0) THEN (item_descrip1 || ' ' || item_descrip2)      
+        ELSE (poitem_comments)       
+       END AS itemdescrip1,       
+       vend_number,
+       vend_name,   
+       poitem_vend_item_number,  
+       CASE WHEN (poitem_vend_uom LIKE '') THEN (uom_name)
+            ELSE (poitem_vend_uom)
+       END AS itemuom,           
+       cntct_first_name || ' ' || cntct_last_name AS cntname,
+       cntct_phone AS tel,
+       cntct_fax AS fax,
+       cntct_email AS email
+        FROM poitem
+       INNER JOIN pohead ON pohead.pohead_id = poitem.poitem_pohead_id
+       INNER JOIN vendinfo ON vendinfo.vend_id = pohead.pohead_vend_id
+       INNER JOIN curr_symbol ON pohead.pohead_curr_id = curr_symbol.curr_id
+        LEFT OUTER JOIN cntct ON cntct.cntct_id = vendinfo.vend_cntct1_id
+        LEFT OUTER JOIN itemsite ON poitem_itemsite_id = itemsite_id
+       INNER JOIN (item JOIN uom ON (item_inv_uom_id=uom_id)) ON (itemsite_item_id = item_id)  
+        LEFT OUTER JOIN expcat ON expcat.expcat_id = poitem.poitem_expcat_id
+        LEFT OUTER JOIN prj ON prj_id = poitem_prj_id
+        LEFT OUTER JOIN
+        (
+          SELECT
+          pohead.pohead_id, 
+          comment_date, 
+          comment_user, 
+          comment_text 
+          FROM comment
+          INNER JOIN pohead ON pohead.pohead_id = comment.comment_source_id
+          WHERE comment_cmnttype_id = getcmnttypeid('Progressing') 
+            AND comment_source = 'P'        
+            AND comment_date IN 
+            (
+              SELECT max(comment_date) AS maxcnmtdate 
+                FROM comment  
+               WHERE comment_cmnttype_id = getcmnttypeid('Progressing') 
+                 AND comment_source = 'P'
+                 AND pohead.pohead_id = comment.comment_source_id
+               GROUP BY comment.comment_source_id
+            )
+         ) subcomment USING (pohead_id)
+  WHERE pohead_status = 'O'
+    AND poitem_status = 'O'
+    AND poitem_qty_received - poitem_qty_returned &lt; poitem_qty_ordered
+    &lt;? if exists("overdue") ?>    
+       AND poitem_duedate &lt; current_date
+     &lt;? elseif exists("duein2weeks") ?>    
+       AND poitem_duedate BETWEEN date(current_date)
+       AND date(current_date + 14)
+     &lt;? elseif exists("dueDateChanged") ?>   
+        AND NOT poitem_rlsd_duedate = poitem_duedate
+     &lt;? elseif exists("duedatestart") ?> 
+       AND poitem_duedate BETWEEN date(&lt;? value("duedatestart") ?>)
+       AND date(&lt;? value("duedateend") ?>)     
+    &lt;? endif ?>
+    &lt;? if exists("order2weeks") ?>
+       AND pohead_orderdate &lt; date(current_date - 14)
+     &lt;? elseif exists("orderdatestart") ?> 
+       AND pohead_orderdate BETWEEN date(&lt;? value("orderdatestart") ?>)
+       AND date(&lt;? value("orderdateend") ?>)    
+    &lt;? endif ?>
+    &lt;? if exists("pohead_id") ?>     
+       AND pohead_id = &lt;? value("pohead_id") ?>
+    &lt;? endif ?> 
+    &lt;? if exists("expcatid") ?>
+      AND poitem_expcat_id = &lt;? value("expcatid") ?>
+    &lt;? endif ?>
+    &lt;? if exists("expcattext") ?>
+       AND COALESCE(expcat_code, prj_number) LIKE &lt;? value("expcattext") ?>  || '%'
+    &lt;? endif ?>
+    &lt;? if exists("username") ?>  
+       AND poitem_id IN (SELECT poreqitem_poitem_id 
+                           FROM poreq.poreqitem, poreq.poreqhead 
+                          WHERE poreqitem_poreqhead_id = poreqhead_id 
+                            AND poreqhead_username = &lt;? value("username") ?>) 
+    &lt;? endif ?>  
+    &lt;? if exists("woID") ?>  
+       AND itemsite_id IN (SELECT itemsite_id 
+                        FROM womatl, itemsite 
+                       WHERE itemsite_id = womatl_itemsite_id   
+                         AND ((itemsite_qtyonhand - qtyAllocated(itemsite_id, womatl_duedate)) &lt; 0 
+                          OR  (itemsite_qtyonhand -  
+                               noNeg(itemuomtouom(itemsite_item_id, womatl_uom_id, NULL, womatl_qtyreq -  
+                               womatl_qtyiss))) &lt; 0)      
+                         AND womatl_wo_id = &lt;? value("woID") ?>) 
+    &lt;? endif ?>
+ORDER BY pohead_number, vend_name,  poitem_duedate, item_number</sql>
+ </querysource>
+ <querysource>
+  <name>header</name>
+  <sql>SELECT text(' '
+&lt;? if exists("alldue") ?>
+   || 'ALL DUE DATES'
+&lt;? elseif exists("overdue") ?>
+   || 'ITEMS OVERDUE'
+&lt;? elseif exists("duein2weeks") ?>
+   || 'ITEMS NOT OVERDUE BUT DUE UPTO 2 WEEKS AHEAD'
+&lt;? elseif exists("dueDateChanged") ?>      
+   || 'DUE DATE CHANGED'
+&lt;? elseif exists("duedatestart") ?>
+   || 'ITEMS DUE FROM ' || date(&lt;? value("duedatestart") ?>) || ' TO ' || date(&lt;? value("duedateend") ?>)
+&lt;? endif ?>
+) AS duefilter, text(' '
+&lt;? if exists("allorders") ?>
+   || 'ALL ORDERED DATES'
+&lt;? elseif exists("order2weeks") ?>
+   || 'ITEMS ORDERED MORE THAN 2 WEEKS AGO'
+&lt;? elseif exists("orderdatestart") ?>
+   || 'ITEMS ORDERED FROM ' || date(&lt;? value("orderdatestart") ?>) || ' TO ' || date(&lt;? value("orderdateend") ?>)
+&lt;? endif ?>
+) AS orderfilter,
+text(' '
+&lt;? if exists("pohead_id") ?>
+   || (SELECT pohead_number FROM pohead WHERE pohead_id = &lt;? value("pohead_id") ?>)
+&lt;? else ?>
+   || 'ALL'
+&lt;? endif ?>  
+) AS pofilter,
+text(' '
+ &lt;? if exists("expcatid") ?>
+      || (SELECT expcat_code FROM expcat WHERE expcat_id = &lt;? value("expcatid") ?>)
+ &lt;? elseif exists("expcattext") ?>
+    || &lt;? value("expcattext") ?> || '*'
+ &lt;? else ?>
+   || 'ALL'
+ &lt;? endif ?> 
+) AS expfilter,
+text(' '
+&lt;? if exists("username") ?>
+   || &lt;? value("username") ?>
+&lt;? else ?>
+   || 'ALL'
+&lt;? endif ?> 
+) AS userfilter,
+text(' '
+&lt;? if exists("woID") ?>
+   || (SELECT wo_number || '-' || wo_subnumber AS wonumber FROM wo WHERE wo_id = &lt;? value("woID") ?>)
+&lt;? else ?>
+   || 'NOT FILTERED'
+&lt;? endif ?> 
+) AS wofilter</sql>
+ </querysource>
+ <rpthead>
+  <height>132</height>
+  <label>
+   <rect>
+    <x>10</x>
+    <y>47</y>
+    <width>130</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>normal</weight>
+   </font>
+   <right/>
+   <vcenter/>
+   <string>Order Date Filter By:</string>
+  </label>
+  <field>
+   <rect>
+    <x>150</x>
+    <y>27</y>
+    <width>400</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>bold</weight>
+   </font>
+   <left/>
+   <vcenter/>
+   <data>
+    <query>header</query>
+    <column>duefilter</column>
+   </data>
+  </field>
+  <label>
+   <rect>
+    <x>10</x>
+    <y>27</y>
+    <width>130</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>normal</weight>
+   </font>
+   <right/>
+   <vcenter/>
+   <string>Due Date Filter By:</string>
+  </label>
+  <field>
+   <rect>
+    <x>150</x>
+    <y>47</y>
+    <width>455</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>bold</weight>
+   </font>
+   <left/>
+   <vcenter/>
+   <data>
+    <query>header</query>
+    <column>orderfilter</column>
+   </data>
+  </field>
+  <label>
+   <rect>
+    <x>570</x>
+    <y>7</y>
+    <width>553</width>
+    <height>40</height>
+   </rect>
+   <font>
+    <face>helvetica</face>
+    <size>20</size>
+    <weight>bold</weight>
+   </font>
+   <right/>
+   <top/>
+   <string>Progressing of Outstanding Items By PO</string>
+  </label>
+  <field>
+   <rect>
+    <x>150</x>
+    <y>7</y>
+    <width>400</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>bold</weight>
+   </font>
+   <left/>
+   <vcenter/>
+   <data>
+    <query>header</query>
+    <column>pofilter</column>
+   </data>
+  </field>
+  <label>
+   <rect>
+    <x>10</x>
+    <y>7</y>
+    <width>130</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>normal</weight>
+   </font>
+   <right/>
+   <vcenter/>
+   <string>PO Filter:</string>
+  </label>
+  <label>
+   <rect>
+    <x>10</x>
+    <y>67</y>
+    <width>130</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>normal</weight>
+   </font>
+   <right/>
+   <vcenter/>
+   <string>Expcode Filter:</string>
+  </label>
+  <field>
+   <rect>
+    <x>150</x>
+    <y>67</y>
+    <width>455</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>bold</weight>
+   </font>
+   <left/>
+   <vcenter/>
+   <data>
+    <query>header</query>
+    <column>expfilter</column>
+   </data>
+  </field>
+  <field>
+   <rect>
+    <x>150</x>
+    <y>87</y>
+    <width>455</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>bold</weight>
+   </font>
+   <left/>
+   <vcenter/>
+   <data>
+    <query>header</query>
+    <column>userfilter</column>
+   </data>
+  </field>
+  <label>
+   <rect>
+    <x>10</x>
+    <y>87</y>
+    <width>130</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>normal</weight>
+   </font>
+   <right/>
+   <vcenter/>
+   <string>Requester Name:</string>
+  </label>
+  <label>
+   <rect>
+    <x>10</x>
+    <y>107</y>
+    <width>130</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>normal</weight>
+   </font>
+   <right/>
+   <vcenter/>
+   <string>Work Order Filter:</string>
+  </label>
+  <field>
+   <rect>
+    <x>150</x>
+    <y>107</y>
+    <width>455</width>
+    <height>20</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>bold</weight>
+   </font>
+   <left/>
+   <vcenter/>
+   <data>
+    <query>header</query>
+    <column>wofilter</column>
+   </data>
+  </field>
+ </rpthead>
+ <pghead>
+  <firstpage/>
+  <height>29</height>
+ </pghead>
+ <pghead>
+  <height>29</height>
+  <line>
+   <xstart>0</xstart>
+   <ystart>20</ystart>
+   <xend>1130</xend>
+   <yend>20</yend>
+   <weight>1</weight>
+  </line>
+  <label>
+   <rect>
+    <x>914</x>
+    <y>0</y>
+    <width>213</width>
+    <height>15</height>
+   </rect>
+   <font>
+    <face>Helvetica</face>
+    <size>10</size>
+    <weight>normal</weight>
+   </font>
+   <right/>
+   <top/>
+   <string>Progressing of Outstanding Items</string>
+  </label>
+ </pghead>
+ <section>
+  <name>detail_group</name>
+  <group>
+   <name>detail_group</name>
+   <column>pohead_id</column>
+   <head>
+    <height>47</height>
+    <label>
+     <rect>
+      <x>715</x>
+      <y>0</y>
+      <width>25</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>FAX:</string>
+    </label>
+    <label>
+     <rect>
+      <x>560</x>
+      <y>15</y>
+      <width>90</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <string>Qty Received</string>
+    </label>
+    <label>
+     <rect>
+      <x>5</x>
+      <y>0</y>
+      <width>25</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>PO#</string>
+    </label>
+    <field>
+     <rect>
+      <x>590</x>
+      <y>0</y>
+      <width>120</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>tel</column>
+     </data>
+    </field>
+    <field>
+     <rect>
+      <x>35</x>
+      <y>0</y>
+      <width>70</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>pohead_number</column>
+     </data>
+    </field>
+    <label>
+     <rect>
+      <x>440</x>
+      <y>15</y>
+      <width>101</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <string>Vendor Item#</string>
+    </label>
+    <field>
+     <rect>
+      <x>745</x>
+      <y>0</y>
+      <width>120</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>fax</column>
+     </data>
+    </field>
+    <label>
+     <rect>
+      <x>360</x>
+      <y>0</y>
+      <width>42</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>NAME:</string>
+    </label>
+    <label>
+     <rect>
+      <x>864</x>
+      <y>0</y>
+      <width>45</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>EMAIL:</string>
+    </label>
+    <label>
+     <rect>
+      <x>60</x>
+      <y>15</y>
+      <width>75</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <string>Item#</string>
+    </label>
+    <line>
+     <xstart>1130</xstart>
+     <ystart>15</ystart>
+     <xend>0</xend>
+     <yend>15</yend>
+     <weight>2</weight>
+    </line>
+    <field>
+     <rect>
+      <x>405</x>
+      <y>0</y>
+      <width>150</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>cntname</column>
+     </data>
+    </field>
+    <label>
+     <rect>
+      <x>885</x>
+      <y>15</y>
+      <width>70</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <string>Ext Cost</string>
+    </label>
+    <label>
+     <rect>
+      <x>10</x>
+      <y>15</y>
+      <width>45</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <string>Line#</string>
+    </label>
+    <label>
+     <rect>
+      <x>964</x>
+      <y>15</y>
+      <width>100</width>
+      <height>16</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <string>Ordered Date</string>
+    </label>
+    <label>
+     <rect>
+      <x>112</x>
+      <y>0</y>
+      <width>45</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Helvetica</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <string>Suppler</string>
+    </label>
+    <label>
+     <rect>
+      <x>814</x>
+      <y>15</y>
+      <width>42</width>
+      <height>16</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <string>Cost</string>
+    </label>
+    <label>
+     <rect>
+      <x>645</x>
+      <y>15</y>
+      <width>90</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <string>Qty Ordered</string>
+    </label>
+    <line>
+     <xstart>1130</xstart>
+     <ystart>0</ystart>
+     <xend>0</xend>
+     <yend>0</yend>
+     <weight>2</weight>
+    </line>
+    <label>
+     <rect>
+      <x>150</x>
+      <y>15</y>
+      <width>125</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <string>Description</string>
+    </label>
+    <field>
+     <rect>
+      <x>914</x>
+      <y>0</y>
+      <width>215</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>email</column>
+     </data>
+    </field>
+    <label>
+     <rect>
+      <x>735</x>
+      <y>15</y>
+      <width>50</width>
+      <height>16</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <string>UOM</string>
+    </label>
+    <field>
+     <rect>
+      <x>165</x>
+      <y>0</y>
+      <width>200</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>vend_name</column>
+     </data>
+    </field>
+    <label>
+     <rect>
+      <x>560</x>
+      <y>0</y>
+      <width>27</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>TEL:</string>
+    </label>
+    <label>
+     <rect>
+      <x>1060</x>
+      <y>15</y>
+      <width>65</width>
+      <height>16</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>Due Date</string>
+    </label>
+    <label>
+     <rect>
+      <x>1045</x>
+      <y>30</y>
+      <width>80</width>
+      <height>16</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>Org Due Date</string>
+    </label>
+   </head>
+   <foot>
+    <height>52</height>
+    <line>
+     <xstart>0</xstart>
+     <ystart>0</ystart>
+     <xend>1130</xend>
+     <yend>0</yend>
+     <weight>2</weight>
+    </line>
+    <label>
+     <rect>
+      <x>885</x>
+      <y>20</y>
+      <width>95</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>Entered By:</string>
+    </label>
+    <label>
+     <rect>
+      <x>5</x>
+      <y>20</y>
+      <width>180</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>Latest Progressing Comment:</string>
+    </label>
+    <text>
+     <rect>
+      <x>190</x>
+      <y>20</y>
+      <width>675</width>
+      <height>15</height>
+     </rect>
+     <bottompad>0</bottompad>
+     <font>
+      <face>Helvetica</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>comment_text</column>
+     </data>
+    </text>
+    <label>
+     <rect>
+      <x>885</x>
+      <y>5</y>
+      <width>95</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>Comment Date:</string>
+    </label>
+    <field>
+     <rect>
+      <x>985</x>
+      <y>5</y>
+      <width>140</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>datetime</column>
+     </data>
+    </field>
+    <field>
+     <rect>
+      <x>985</x>
+      <y>20</y>
+      <width>140</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <hcenter/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>comment_user</column>
+     </data>
+    </field>
+    <field>
+     <rect>
+      <x>190</x>
+      <y>5</y>
+      <width>140</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>normal</weight>
+     </font>
+     <left/>
+     <vcenter/>
+     <data>
+      <query>Detail</query>
+      <column>pohead_number</column>
+     </data>
+    </field>
+    <label>
+     <rect>
+      <x>5</x>
+      <y>5</y>
+      <width>180</width>
+      <height>15</height>
+     </rect>
+     <font>
+      <face>Arial</face>
+      <size>8</size>
+      <weight>bold</weight>
+     </font>
+     <right/>
+     <vcenter/>
+     <string>PO Number:</string>
+    </label>
+   </foot>
+  </group>
+  <group>
+   <name>Comments</name>
+   <column>pohead_id</column>
+  </group>
+  <detail>
+   <key>
+    <query>Detail</query>
+   </key>
+   <height>33</height>
+   <field>
+    <rect>
+     <x>735</x>
+     <y>3</y>
+     <width>55</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>6</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>itemuom</column>
+    </data>
+   </field>
+   <field>
+    <rect>
+     <x>885</x>
+     <y>3</y>
+     <width>75</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>f_extended</column>
+    </data>
+   </field>
+   <field>
+    <rect>
+     <x>655</x>
+     <y>3</y>
+     <width>75</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>f_ordered</column>
+    </data>
+   </field>
+   <text>
+    <rect>
+     <x>150</x>
+     <y>3</y>
+     <width>265</width>
+     <height>15</height>
+    </rect>
+    <bottompad>0</bottompad>
+    <font>
+     <face>Helvetica</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <left/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>itemdescrip1</column>
+    </data>
+   </text>
+   <field>
+    <rect>
+     <x>970</x>
+     <y>3</y>
+     <width>80</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>f_ordereddate</column>
+    </data>
+   </field>
+   <field>
+    <rect>
+     <x>795</x>
+     <y>3</y>
+     <width>80</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>f_price</column>
+    </data>
+   </field>
+   <field>
+    <rect>
+     <x>570</x>
+     <y>3</y>
+     <width>75</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>f_received</column>
+    </data>
+   </field>
+   <field>
+    <rect>
+     <x>50</x>
+     <y>3</y>
+     <width>90</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>item_number</column>
+    </data>
+   </field>
+   <line>
+    <xstart>0</xstart>
+    <ystart>0</ystart>
+    <xend>1130</xend>
+    <yend>0</yend>
+    <weight>0</weight>
+   </line>
+   <text>
+    <rect>
+     <x>425</x>
+     <y>3</y>
+     <width>135</width>
+     <height>15</height>
+    </rect>
+    <bottompad>0</bottompad>
+    <font>
+     <face>Helvetica</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <left/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>poitem_vend_item_number</column>
+    </data>
+   </text>
+   <field>
+    <rect>
+     <x>1055</x>
+     <y>18</y>
+     <width>65</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>f_orgduedate</column>
+    </data>
+   </field>
+   <field>
+    <rect>
+     <x>1055</x>
+     <y>3</y>
+     <width>65</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>f_duedate</column>
+    </data>
+   </field>
+   <field>
+    <rect>
+     <x>10</x>
+     <y>3</y>
+     <width>30</width>
+     <height>15</height>
+    </rect>
+    <font>
+     <face>Arial</face>
+     <size>8</size>
+     <weight>normal</weight>
+    </font>
+    <hcenter/>
+    <vcenter/>
+    <data>
+     <query>Detail</query>
+     <column>poitem_linenumber</column>
+    </data>
+   </field>
+  </detail>
+ </section>
+ <pgfoot>
+  <height>57</height>
+  <field>
+   <rect>
+    <x>1060</x>
+    <y>10</y>
+    <width>60</width>
+    <height>17</height>
+   </rect>
+   <font>
+    <face>helvetica</face>
+    <size>10</size>
+    <weight>normal</weight>
+   </font>
+   <hcenter/>
+   <vcenter/>
+   <data>
+    <query>Context Query</query>
+    <column>page_number</column>
+   </data>
+  </field>
+  <label>
+   <rect>
+    <x>0</x>
+    <y>10</y>
+    <width>85</width>
+    <height>15</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>bold</weight>
+   </font>
+   <right/>
+   <vcenter/>
+   <string>Report Date:</string>
+  </label>
+  <field>
+   <rect>
+    <x>95</x>
+    <y>10</y>
+    <width>165</width>
+    <height>15</height>
+   </rect>
+   <font>
+    <face>Arial</face>
+    <size>10</size>
+    <weight>normal</weight>
+   </font>
+   <left/>
+   <vcenter/>
+   <data>
+    <query>Context Query</query>
+    <column>report_date</column>
+   </data>
+  </field>
+  <line>
+   <xstart>0</xstart>
+   <ystart>10</ystart>
+   <xend>1130</xend>
+   <yend>10</yend>
+   <weight>1</weight>
+  </line>
+  <label>
+   <rect>
+    <x>960</x>
+    <y>10</y>
+    <width>95</width>
+    <height>16</height>
+   </rect>
+   <font>
+    <face>Helvetica</face>
+    <size>10</size>
+    <weight>bold</weight>
+   </font>
+   <right/>
+   <vcenter/>
+   <string>Page #:</string>
+  </label>
+ </pgfoot>
+</report>
