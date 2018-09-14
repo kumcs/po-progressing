@@ -1,9 +1,6 @@
-# Descriptive Title (e.g., Nordic CRM Enhancements)
+# Purchase Order Progressing Screen
 
-Overview of what's located in the directory, and why.
-
-- Item 1
-- Item 2
+Purchase order progressing screen (and associated reports) containing all outstanding orders and contact details.
 
 ## Details
 
